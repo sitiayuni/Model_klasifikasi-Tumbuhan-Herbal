@@ -269,23 +269,18 @@ if selected == "Petunjuk":
     
 elif selected == "Klasifikasi":
     st.title("🌿 Klasifikasi Tumbuhan Herbal")
-
-    # Jangan gunakan parameter `type` agar semua file bisa diunggah dulu
     uploaded_file = st.file_uploader("Silahkan unggah gambar daun sesuai petunjuk (format .jpg, .jpeg, .png)")
 
     if uploaded_file is not None:
-        # Cek ekstensi file
         file_ext = os.path.splitext(uploaded_file.name)[1].lower()
-
         if file_ext not in [".jpg", ".jpeg", ".png"]:
             st.error("❌ Format file tidak valid. Hanya file .jpg, .jpeg, dan .png yang diperbolehkan.")
         else:
             try:
-                # Coba buka sebagai gambar
                 image = Image.open(uploaded_file).convert('RGB')
-                st.image(image, width=300, caption="🖼️ Gambar yang diunggah")
+                st.image(image, width=300, caption = "Gambar yang diunggah")
 
-                if st.button("🔍 Prediksi", type="primary"):
+                if st.button("🔍 Klasifikasi", type="primary"):
                     img_array = preprocess_image(image)
 
                     label1, conf1, time1 = predict_with_threshold(model_mobilenetv2, img_array)
