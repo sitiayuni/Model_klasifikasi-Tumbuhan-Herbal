@@ -267,44 +267,44 @@ if selected == "Petunjuk":
         st.image("gambar/salah.jpg", caption="**Contoh gambar yang salah**")
     
 elif selected == "Klasifikasi":
-    import streamlit as st
-from PIL import Image, UnidentifiedImageError
-import os
+    st.title("🌿 Klasifikasi Tumbuhan Herbal")
 
-st.title("Klasifikasi Tumbuhan Herbal")
-uploaded_file = st.file_uploader("Silakan unggah gambar daun sesuai petunjuk (hanya .jpg, .jpeg, .png)")
+    # Jangan gunakan parameter `type` agar semua file bisa diunggah dulu
+    uploaded_file = st.file_uploader("Silahkan unggah gambar daun sesuai petunjuk (format .jpg, .jpeg, .png)")
 
-if uploaded_file is not None:
-    # Ambil ekstensi file dan ubah ke huruf kecil
-    file_ext = os.path.splitext(uploaded_file.name)[1].lower()
+    if uploaded_file is not None:
+        # Cek ekstensi file
+        file_ext = os.path.splitext(uploaded_file.name)[1].lower()
 
-    # Validasi ekstensi file
-    if file_ext not in [".jpg", ".jpeg", ".png"]:
-        st.error("❌ Format file tidak valid. Sistem hanya menerima file .jpg, .jpeg, dan .png.")
-    else:
-        try:
-            # Coba buka file sebagai gambar
-            image = Image.open(uploaded_file).convert('RGB')
-            st.image(image, width=300)
+        if file_ext not in [".jpg", ".jpeg", ".png"]:
+            st.error("❌ Format file tidak valid. Hanya file .jpg, .jpeg, dan .png yang diperbolehkan.")
+        else:
+            try:
+                # Coba buka sebagai gambar
+                image = Image.open(uploaded_file).convert('RGB')
+                st.image(image, width=300, caption="🖼️ Gambar yang diunggah")
 
-            if st.button("Prediksi", type="primary"):
-                img_array = preprocess_image(image)
-                label1, conf1, time1 = predict_with_threshold(model_mobilenetv2, img_array)
-                label2, conf2, time2 = predict_with_threshold(model_resnet50v2, img_array)
-                tab1, tab2 = st.tabs(["🍃 Hasil MobileNetV2", "🍃 Hasil ResNet50V2"])
+                if st.button("🔍 Prediksi", type="primary"):
+                    img_array = preprocess_image(image)
 
-                with tab1:
-                    if label1 == "Kelas Tidak Dikenal":
-                        st.error("⚠️ Mohon maaf, sistem tidak dapat mengenali tumbuhan ini.")
-                    else:
-                        show_plant_info(label1, conf1)
-                with tab2:
-                    if label2 == "Kelas Tidak Dikenal":
-                        st.error("⚠️ Mohon maaf, sistem tidak dapat mengenali tumbuhan ini.")
-                    else:
-                        show_plant_info(label2, conf2)
+                    label1, conf1, time1 = predict_with_threshold(model_mobilenetv2, img_array)
+                    label2, conf2, time2 = predict_with_threshold(model_resnet50v2, img_array)
 
-        except UnidentifiedImageError:
-            st.error("❌ File rusak atau bukan gambar yang valid. Silakan unggah ulang.")
-        except Exception as e:
-            st.error(f"⚠️ Terjadi kesalahan saat memproses gambar: {e}")
+                    tab1, tab2 = st.tabs(["🍃 Hasil MobileNetV2", "🍃 Hasil ResNet50V2"])
+
+                    with tab1:
+                        if label1 == "Kelas Tidak Dikenal":
+                            st.error("⚠️ Mohon maaf, sistem tidak dapat mengenali tumbuhan ini.")
+                        else:
+                            show_plant_info(label1, conf1)
+
+                    with tab2:
+                        if label2 == "Kelas Tidak Dikenal":
+                            st.error("⚠️ Mohon maaf, sistem tidak dapat mengenali tumbuhan ini.")
+                        else:
+                            show_plant_info(label2, conf2)
+
+            except UnidentifiedImageError:
+                st.error("❌ File tidak dapat dibaca sebagai gambar. Pastikan file tidak corrupt dan benar-benar berformat gambar.")
+            except Exception as e:
+                st.error(f"⚠️ Terjadi kesalahan saat memproses gambar: {e}")
