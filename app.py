@@ -267,11 +267,23 @@ if selected == "Petunjuk":
         st.image("gambar/salah.jpg", caption="**Contoh gambar yang salah**")
     
 elif selected == "Klasifikasi":
-    st.title("Klasifikasi Tumbuhan Herbal")
-    uploaded_file = st.file_uploader("Silahkan unggah gambar daun sesuai petunjuk", type=["jpg", "jpeg", "png"])
+    import streamlit as st
+from PIL import Image, UnidentifiedImageError
+import os
 
-    if uploaded_file is not None:
+st.title("Klasifikasi Tumbuhan Herbal")
+uploaded_file = st.file_uploader("Silakan unggah gambar daun sesuai petunjuk (hanya .jpg, .jpeg, .png)")
+
+if uploaded_file is not None:
+    # Ambil ekstensi file dan ubah ke huruf kecil
+    file_ext = os.path.splitext(uploaded_file.name)[1].lower()
+
+    # Validasi ekstensi file
+    if file_ext not in [".jpg", ".jpeg", ".png"]:
+        st.error("❌ Format file tidak valid. Sistem hanya menerima file .jpg, .jpeg, dan .png.")
+    else:
         try:
+            # Coba buka file sebagai gambar
             image = Image.open(uploaded_file).convert('RGB')
             st.image(image, width=300)
 
@@ -291,8 +303,8 @@ elif selected == "Klasifikasi":
                         st.error("⚠️ Mohon maaf, sistem tidak dapat mengenali tumbuhan ini.")
                     else:
                         show_plant_info(label2, conf2)
-                
+
         except UnidentifiedImageError:
-            st.error("❌ File yang diunggah bukan gambar yang valid atau gambar corrupt. Silakan unggah ulang.")
+            st.error("❌ File rusak atau bukan gambar yang valid. Silakan unggah ulang.")
         except Exception as e:
             st.error(f"⚠️ Terjadi kesalahan saat memproses gambar: {e}")
