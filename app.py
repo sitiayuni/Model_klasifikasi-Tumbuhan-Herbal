@@ -5,6 +5,8 @@ import tensorflow as tf
 import time, requests, tempfile
 from PIL import Image, UnidentifiedImageError
 from streamlit_option_menu import option_menu
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input as mobilenetv2_preprocess
+from tensorflow.keras.applications.resnet import preprocess_input as resnet50_preprocess
 
 st.set_page_config(
     page_title="Leafix",
@@ -29,13 +31,13 @@ def load_model_from_github(url, model_name):
         st.error(f"Gagal memuat model {model_name}: {str(e)}")
         return None
 
-MOBILENETV2_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/mobilenetv2_model45_2.h5"
-RESNET50V2_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/resnet50v2_2.h5"
+MOBILENETV2_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/mobilenetv2_model_.h5"
+RESNET50_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/mobilenetv2_model_.h5"
 
 model_mobilenetv2 = load_model_from_github(MOBILENETV2_MODEL_URL, "MobileNet50V2")
-model_resnet50v2 = load_model_from_github(RESNET50V2_MODEL_URL, "ResNet50V2")
+model_resnet50 = load_model_from_github(RESNET50_MODEL_URL, "ResNet50")
 
-if model_mobilenetv2 is None or model_resnet50v2 is None:
+if model_mobilenetv2 is None or model_resnet50 is None:
     st.error("Aplikasi tidak dapat berjalan tanpa model. Silakan hubungi administrator.")
     st.stop()
 
@@ -195,14 +197,27 @@ def predict_with_threshold(model, img_array, threshold=0.65):
     else:
         return labels[predicted_class[0]], confidence_percent, execution_time
 
-#Preprocessing gambar
-def preprocess_image(image):
-    img_size = (224, 224) 
+def preprocess_image_mobilenetv2(image):
+    img_size = (224, 224)
     image = image.resize(img_size)
     image = np.array(image).astype(np.float32)
-    image = (image / 127.5) - 1.0  # Normalisasi rentang [-1 hingga 1] 
+    image = mobilenetv2_preprocess(image)
     image = np.expand_dims(image, axis=0)
     return image
+
+def preprocess_image_resnet50(image):
+    img_size = (224, 224)
+    image = image.resize(img_size)
+    image = np.array(image).astype(np.float32)
+    image = resnet50_preprocess(image)
+    image = np.expand_dims(image, axis=0)
+    return image
+
+def get_google_search_link(plant_name):
+    base_url = "https://www.google.com/search?q="
+    query = plant_name.replace(" ", "+")
+    return base_url + query
+
 
 def show_plant_info(label, conf):
     if label in plant_info:
@@ -224,6 +239,8 @@ def show_plant_info(label, conf):
             st.write(f"**Genus** : {taxonomy['Genus']}")
             st.write(f"**Spesies** : {taxonomy['Spesies']}")
             st.markdown(f"**Keakuratan** : {conf:.2f}%")
+            search_link = get_google_search_link(label)
+            st.markdown(f"[🔍 Cari lebih lanjut tentang {label} di Google]({search_link})")
 
         with col1:
             try:
@@ -281,12 +298,13 @@ elif selected == "Klasifikasi":
                 st.image(image, width=300, caption = "Gambar yang diunggah")
 
                 if st.button("🔍 Klasifikasi", type="primary"):
-                    img_array = preprocess_image(image)
+                    img_array_mobilenet = preprocess_image_mobilenetv2(image)
+                    img_array_resnet = preprocess_image_resnet50(image)
 
-                    label1, conf1, time1 = predict_with_threshold(model_mobilenetv2, img_array)
-                    label2, conf2, time2 = predict_with_threshold(model_resnet50v2, img_array)
+                    label1, conf1, time1 = predict_with_threshold(model_mobilenetv2, img_array_mobilenet)
+                    label2, conf2, time2 = predict_with_threshold(model_resnet50, img_array_resnet)
 
-                    tab1, tab2 = st.tabs(["🍃 Hasil MobileNetV2", "🍃 Hasil ResNet50V2"])
+                    tab1, tab2 = st.tabs(["🍃 Hasil MobileNetV2", "🍃 Hasil ResNet50"])
 
                     with tab1:
                         if label1 == "Kelas Tidak Dikenal":
