@@ -32,7 +32,7 @@ def load_model_from_github(url, model_name):
         return None
 
 MOBILENETV2_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/mobilenetv2_model_.h5"
-RESNET50_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/mobilenetv2_model_.h5"
+RESNET50_MODEL_URL = "https://github.com/sitiayuni/Model-Skripsi/releases/download/V.1.0.0/resnet50_model_processInput.h5"
 
 model_mobilenetv2 = load_model_from_github(MOBILENETV2_MODEL_URL, "MobileNet50V2")
 model_resnet50 = load_model_from_github(RESNET50_MODEL_URL, "ResNet50")
